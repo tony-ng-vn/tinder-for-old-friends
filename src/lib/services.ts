@@ -2,8 +2,10 @@ import type { ExtractionResult, KeptEncounterSummary, TriageAction } from "@rela
 
 import { getAIService } from "./ai";
 import { getActiveSession, insertCapture, insertEncounterFromExtraction } from "./db";
+import { mapEncounterWithCapture } from "./encounter-map";
 import { enrichEncounter, enrichEncounters } from "./encounter-enrich";
 import { getStore } from "./store";
+import { uploadCaptureImage } from "./storage";
 import { createServiceClient } from "./supabase";
 
 export async function startSession(eventName: string) {
@@ -60,11 +62,27 @@ export async function extractCapture(input: {
   if (!session) throw new Error("Session not found");
   if (session.ended_at) throw new Error("Session already ended");
 
+  const captureId = crypto.randomUUID();
+  let storagePath = input.storagePath;
+  let publicUrl = input.publicUrl;
+
+  if (!publicUrl && input.imageBase64) {
+    const uploaded = await uploadCaptureImage({
+      sessionId: input.sessionId,
+      captureId,
+      imageBase64: input.imageBase64,
+      mimeType: input.mimeType,
+    });
+    storagePath = uploaded.storagePath;
+    publicUrl = uploaded.publicUrl;
+  }
+
   const capture = await insertCapture({
     sessionId: input.sessionId,
+    captureId,
     mimeType: input.mimeType,
-    storagePath: input.storagePath,
-    publicUrl: input.publicUrl,
+    storagePath,
+    publicUrl,
   });
 
   const parsed = await ai.extractEncounterFromImage({
@@ -80,7 +98,11 @@ export async function extractCapture(input: {
     parsed,
   });
 
-  return { capture, encounter, extraction: parsed };
+  return {
+    capture: { ...capture, public_url: publicUrl ?? null },
+    encounter: { ...encounter, capture_url: publicUrl ?? null },
+    extraction: parsed,
+  };
 }
 
 export async function listPendingSessions() {
@@ -138,10 +160,7 @@ export async function getSessionQueue(sessionId: string) {
 
   if (error) throw new Error(error.message);
 
-  const queue = (data ?? []).map((e) => {
-    const capture = e.captures as { public_url: string | null } | null;
-    return { ...e, capture_url: capture?.public_url ?? null };
-  });
+  const queue = (data ?? []).map((e) => mapEncounterWithCapture(e));
   return { queue };
 }
 
@@ -169,7 +188,10 @@ export async function endSession(sessionId: string) {
     .eq("status", "pending")
     .order("created_at", { ascending: true });
 
-  return { session_id: sessionId, queue: queue ?? [] };
+  return {
+    session_id: sessionId,
+    queue: (queue ?? []).map((e) => mapEncounterWithCapture(e)),
+  };
 }
 
 export async function updateEncounter(
@@ -252,12 +274,12 @@ export async function searchEncounters(query: string, limit = 10) {
         const { data } = await supabase
           .from("encounters")
           .select(
-            "id, name, number, location, context, company, role, event_name, linkedin_url",
+            "id, name, number, location, context, company, role, event_name, linkedin_url, captures ( public_url )",
           )
           .eq("status", "kept")
           .order("created_at", { ascending: false })
           .limit(200);
-        return data ?? [];
+        return (data ?? []).map((e) => mapEncounterWithCapture(e));
       })();
 
   if (!kept.length) return { query, matches: [] as Array<KeptEncounterSummary & { score: number; reason: string }> };
@@ -275,7 +297,7 @@ export async function searchEncounters(query: string, limit = 10) {
             const full = mem.encounters.get(m.id);
             return full ? enrichEncounter(mem, full).capture_url : null;
           })()
-        : null;
+        : (encounter as { capture_url?: string | null }).capture_url ?? null;
       return { ...encounter, score: m.score, reason: m.reason, capture_url: captureUrl };
     })
     .filter(Boolean);

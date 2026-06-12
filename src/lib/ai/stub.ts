@@ -27,7 +27,38 @@ export const DEMO_PERSON_DRAFT: ExtractionResult = {
   confidence: 0.35,
 };
 
-const DEMO_EXTRACTIONS = [DEMO_PERSON_FULL, DEMO_PERSON_DRAFT];
+/** Demo person 3 */
+export const DEMO_PERSON_3: ExtractionResult = {
+  name: "Jordan Lee",
+  number: null,
+  location: "New York",
+  context: "Discussed AI agents for healthcare",
+  company: "HealthAI",
+  role: "Founder",
+  linkedin_url: null,
+  is_draft: false,
+  confidence: 0.88,
+};
+
+/** Demo person 4 */
+export const DEMO_PERSON_4: ExtractionResult = {
+  name: "Sam Rivera",
+  number: null,
+  location: "Austin",
+  context: "Met at the after-party",
+  company: "Vercel",
+  role: "DevRel",
+  linkedin_url: null,
+  is_draft: false,
+  confidence: 0.85,
+};
+
+const DEMO_EXTRACTIONS = [
+  DEMO_PERSON_FULL,
+  DEMO_PERSON_DRAFT,
+  DEMO_PERSON_3,
+  DEMO_PERSON_4,
+];
 
 const DEFAULT_EXTRACTION: ExtractionResult = DEMO_PERSON_FULL;
 

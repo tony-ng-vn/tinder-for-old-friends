@@ -51,7 +51,7 @@ export const api = {
   extract: (input: {
     session_id: string;
     image_base64: string;
-    mime_type: "image/png" | "image/jpeg";
+    mime_type: "image/png" | "image/jpeg" | "image/gif" | "image/webp";
   }) =>
     request<{ encounter: Encounter }>("/api/extract", {
       method: "POST",

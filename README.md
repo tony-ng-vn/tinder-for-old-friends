@@ -1,94 +1,60 @@
 # Relationship Memory
 
-Personal relationship Memory for people met at events — screenshot capture, Tinder-style Triage (Keep/Forget), and natural language search.
+**Remember the people you meet at events — before they fade.**
 
-## Docs
+You go to conferences, meetups, and demo days. You screenshot LinkedIn profiles and business cards. Then life moves on and you forget who they were. Relationship Memory helps you decide, in the moment, who is worth keeping.
 
-- [PRD](docs/PRD.md)
-- [UI Brief](docs/UI_BRIEF.md)
-- [Agent Orchestration](docs/AGENT_ORCHESTRATION.md)
-- [Implementation Plan](docs/IMPLEMENTATION_PLAN.md)
-- [QA Audit](docs/QA_AUDIT.md)
-- [Domain glossary](CONTEXT.md)
+---
 
-## Structure
+## How it works
 
-```
-packages/shared/     # Types, Zod schemas, AIService interface
-src/                 # Next.js API backend
-apps/mobile/         # Expo React Native client
-supabase/migrations/ # Postgres schema
-scripts/             # Integration test scripts
-```
+### 1. Start a session
 
-## Quick start
+Open the app and tap **Start new session**. Name the event you're at (e.g. "Ship Week Demo Day").
 
-```bash
-npm install
-```
+This begins **monitoring** — you're actively collecting people you meet.
 
-### Backend (local dev)
+### 2. Capture screenshots
 
-```bash
-cp .env.example .env
-# Set NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY for persistent storage
-# Optional: SUPABASE_SERVICE_ROLE_KEY for elevated server access
-# Optional: CURSOR_API_KEY for real extraction
+During the event, screenshot LinkedIn profiles, business cards, or contact info on your phone like you normally would.
 
-npm run dev
-```
+When you're ready, tap **Import from Photos** and select **all your screenshots at once**. Each screenshot becomes one person on your "pond."
 
-`AI_PROVIDER=stub` (default) uses fixture AI — no Cursor key needed.
+Wait until importing finishes before tapping **End monitoring**.
 
-**Supabase setup** (one-time):
+### 3. Triage — Keep or Forget
 
-```bash
-supabase link --project-ref YOUR_PROJECT_REF --yes
-supabase db push --yes
-npm run supabase:check   # verify tables + insert permissions
-```
+After monitoring ends, you get a **swipe deck** (like Tinder):
 
-For local API testing without Supabase, use `USE_IN_MEMORY=1` (set automatically by `npm run e2e`).
+- **Swipe right** → Keep this person in your memory
+- **Swipe left** → Forget them (gone for good)
 
-### Tests
+The screenshot is front and center — you're judging the *person*, not a wall of text.
 
-```bash
-npm test              # unit tests (services layer)
-npm run typecheck     # TypeScript
-npm run e2e           # API core loop integration (starts dev server, curl tests, cleanup)
-```
+If you keep someone, you can optionally add context: what you talked about, their name if unclear, etc.
 
-### Mobile
+### 4. Memory & Search
 
-From repo root (after `npm install` at root):
+**Memory** — a gallery of everyone you kept, with their screenshots.
 
-```bash
-# Terminal 1 — backend
-USE_IN_MEMORY=1 npm run dev
+**Search** — ask in plain language: *"Who did I meet from Stripe?"* or *"Founder in healthcare at Ship Week"*. The app finds matches from your kept contacts.
 
-# Terminal 2 — Expo UI
-EXPO_PUBLIC_API_URL=http://localhost:3000 npm run mobile
-```
+---
 
-Or from `apps/mobile`:
+## The idea
 
-```bash
-EXPO_PUBLIC_API_URL=http://localhost:3000 npm start
-```
+Most networking apps assume you'll follow up with everyone. Relationship Memory assumes the opposite: **you'll forget most people, and that's fine** — as long as you consciously choose who to remember.
 
-First start may sit on **"Added config plugins"** or **"rebuilding cache"** for ~30–60s — that's normal. You should then see **"Waiting on http://localhost:8081"** and a QR code. Press `i` for iOS Simulator.
+Forgotten contacts are not searchable and not stored in your memory. Kept contacts stay with their screenshot, event name, and any context you added.
 
-If port 8081 is busy: `lsof -ti :8081 | xargs kill` then restart.
+---
 
-Point `EXPO_PUBLIC_API_URL` at your running Next.js backend (use your machine's LAN IP when testing on a physical device).
+## Getting the app
 
-## API
+Relationship Memory runs as a mobile app (iOS/Android via Expo). You need the backend running on your machine or a deployed server — see [docs/DEVELOPER.md](docs/DEVELOPER.md) for setup.
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| POST | `/api/sessions` | Start monitoring |
-| POST | `/api/extract` | Screenshot → Encounter |
-| POST | `/api/sessions/:id/end` | End → Triage queue |
-| POST | `/api/encounters/:id/triage` | Keep / Forget |
-| POST | `/api/search` | NL search |
-| GET | `/api/encounters?status=kept` | Memory list |
+---
+
+## Privacy
+
+Your screenshots and contact data are stored in your Supabase project. Nothing is shared with other users — this is a personal memory tool, not a social network.

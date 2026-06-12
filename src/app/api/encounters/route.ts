@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { mapEncounterWithCapture } from "@/lib/encounter-map";
 import { enrichEncounters } from "@/lib/encounter-enrich";
 import { getStore } from "@/lib/store";
 import { createServiceClient } from "@/lib/supabase";
@@ -22,10 +23,7 @@ export async function GET(req: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const encounters = (data ?? []).map((e) => {
-      const capture = e.captures as { public_url: string | null } | null;
-      return { ...e, capture_url: capture?.public_url ?? null };
-    });
+    const encounters = (data ?? []).map((e) => mapEncounterWithCapture(e));
     return NextResponse.json({ encounters });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

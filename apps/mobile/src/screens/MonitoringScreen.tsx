@@ -38,34 +38,53 @@ export function MonitoringScreen({ navigation }: { navigation: any }) {
 
     setImporting(true);
     let success = 0;
+    const failures: string[] = [];
     try {
-      for (const asset of result.assets) {
-        if (!asset.base64) continue;
-        const mime = asset.mimeType === "image/png" ? "image/png" : "image/jpeg";
-        const { encounter } = await api.extract({
-          session_id: sessionId,
-          image_base64: asset.base64,
-          mime_type: mime,
-        });
-        addActivity({
-          id: encounter.id,
-          name: encounter.name,
-          isDraft: encounter.is_draft,
-          at: new Date().toISOString(),
-        });
-        success += 1;
+      for (const [i, asset] of result.assets.entries()) {
+        if (!asset.base64) {
+          failures.push(`Photo ${i + 1}: missing image data`);
+          continue;
+        }
+        const mime =
+          asset.mimeType === "image/png"
+            ? "image/png"
+            : asset.mimeType === "image/gif"
+              ? "image/gif"
+              : asset.mimeType === "image/webp"
+                ? "image/webp"
+                : "image/jpeg";
+        try {
+          const { encounter } = await api.extract({
+            session_id: sessionId,
+            image_base64: asset.base64,
+            mime_type: mime,
+          });
+          addActivity({
+            id: encounter.id,
+            name: encounter.name,
+            isDraft: encounter.is_draft,
+            at: new Date().toISOString(),
+          });
+          success += 1;
+        } catch (e) {
+          failures.push(
+            `Photo ${i + 1}: ${e instanceof Error ? e.message : "import failed"}`,
+          );
+        }
       }
       setImportCount((c) => c + success);
       if (success > 0) {
         Alert.alert(
           "Captured",
-          success === 1
-            ? "Another lily pad on the pond."
-            : `${success} lily pads on the pond.`,
+          failures.length
+            ? `${success} of ${result.assets.length} imported. ${failures[0]}`
+            : success === 1
+              ? "Another lily pad on the pond."
+              : `${success} lily pads on the pond.`,
         );
+      } else if (failures.length) {
+        Alert.alert("Import failed", failures.join("\n"));
       }
-    } catch (e) {
-      Alert.alert("Error", e instanceof Error ? e.message : "Failed");
     } finally {
       setImporting(false);
     }
@@ -119,8 +138,14 @@ export function MonitoringScreen({ navigation }: { navigation: any }) {
         </View>
       )}
 
-      <TouchableOpacity style={styles.endBtn} onPress={endMonitoring}>
-        <Text style={styles.endText}>End monitoring</Text>
+      <TouchableOpacity
+        style={[styles.endBtn, importing && styles.endBtnDisabled]}
+        onPress={endMonitoring}
+        disabled={importing}
+      >
+        <Text style={styles.endText}>
+          {importing ? "Wait for imports to finish…" : "End monitoring"}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -156,5 +181,6 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: "center",
   },
+  endBtnDisabled: { opacity: 0.45 },
   endText: { color: theme.textMuted, fontWeight: "600", fontSize: 16 },
 });

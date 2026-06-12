@@ -17,12 +17,13 @@ export async function getActiveSession(sessionId: string) {
 
 export async function insertCapture(input: {
   sessionId: string;
+  captureId?: string;
   storagePath?: string;
   publicUrl?: string;
   mimeType: string;
 }) {
   const supabase = createServiceClient();
-  const captureId = crypto.randomUUID();
+  const captureId = input.captureId ?? crypto.randomUUID();
   const ext = input.mimeType.split("/")[1] ?? "png";
   const storagePath =
     input.storagePath ?? captureStoragePath(input.sessionId, captureId, ext);

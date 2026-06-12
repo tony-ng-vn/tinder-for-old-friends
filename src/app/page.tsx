@@ -16,12 +16,12 @@ export default function Home() {
       </div>
 
       <div className={styles.content}>
-        <span className={styles.pill}>Personal event networking memory</span>
-        <h1 className={styles.title}>Relationship Memory</h1>
+        <span className={styles.pill}>Swipe through people you almost forgot</span>
+        <h1 className={styles.title}>Tinder for Old Friends</h1>
         <p className={styles.subtitle}>
-          You met someone and you might never see them again. Capture LinkedIn
-          screenshots at the event, triage who matters, recall them later in
-          plain language.
+          You ran into someone from way back at a conference or meetup. Capture
+          their LinkedIn screenshot, swipe to keep or forget, and search your
+          kept contacts later in plain language.
         </p>
 
         <div className={styles.formula}>

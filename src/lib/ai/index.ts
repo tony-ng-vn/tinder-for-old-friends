@@ -1,18 +1,24 @@
 import type { AIService } from "@relationship-memory/shared";
 
 import { CursorComposerProvider } from "./cursor-provider";
-import { getTestStubAIService, StubAIService } from "./stub";
+import { getStubAIService, getTestStubAIService } from "./stub";
 
-export { StubAIService, setTestStubAIService, getTestStubAIService } from "./stub";
+export { StubAIService, setTestStubAIService, getTestStubAIService, getStubAIService } from "./stub";
 export { CursorComposerProvider } from "./cursor-provider";
+
+export type ExtractionSource = "stub" | "cursor";
+
+export function getExtractionSource(): ExtractionSource {
+  const provider = process.env.AI_PROVIDER ?? "stub";
+  return provider === "cursor" ? "cursor" : "stub";
+}
 
 export function getAIService(): AIService {
   const testStub = getTestStubAIService();
   if (testStub) return testStub;
 
-  const provider = process.env.AI_PROVIDER ?? "stub";
-  if (provider === "cursor") {
+  if (getExtractionSource() === "cursor") {
     return new CursorComposerProvider();
   }
-  return new StubAIService();
+  return getStubAIService();
 }

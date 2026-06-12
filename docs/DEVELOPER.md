@@ -25,7 +25,16 @@ cp .env.example .env
 npm run dev
 ```
 
-`AI_PROVIDER=stub` (default) uses fixture AI — no Cursor key needed.
+`AI_PROVIDER=stub` (default) uses **demo placeholder names** — it does not read screenshots. For real LinkedIn name extraction:
+
+```bash
+# In .env
+AI_PROVIDER=cursor
+CURSOR_API_KEY=crsr_...
+CURSOR_MODEL_ID=composer-2.5   # optional, defaults to composer-2.5
+```
+
+Restart the backend after changing `.env`. The mobile app will show real extracted names instead of "Demo: …" labels.
 
 **Supabase** (one-time):
 

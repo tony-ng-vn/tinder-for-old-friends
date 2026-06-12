@@ -35,7 +35,7 @@ export function EncounterCard({ encounter, style, draft }: Props) {
     <GlassCard style={[styles.card, style]} contentStyle={styles.cardInner}>
       {imageUrl ? (
         <View style={styles.imageWrap}>
-          <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+          <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="contain" />
         </View>
       ) : (
         <View style={[styles.imageWrap, styles.imagePlaceholder]}>
@@ -99,7 +99,7 @@ export function EncounterCard({ encounter, style, draft }: Props) {
 const styles = StyleSheet.create({
   card: { flex: 1, overflow: "hidden" },
   cardInner: { flex: 1, padding: 0 },
-  imageWrap: { height: "60%", minHeight: 180, backgroundColor: "rgba(0,0,0,0.35)" },
+  imageWrap: { height: "60%", minHeight: 180, backgroundColor: theme.panelBg },
   image: { width: "100%", height: "100%" },
   imagePlaceholder: { alignItems: "center", justifyContent: "center" },
   placeholderText: { color: theme.textMuted, fontSize: 13 },

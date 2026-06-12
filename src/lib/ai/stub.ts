@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
+
 import type { AIService } from "@relationship-memory/shared";
-import type { ExtractionResult, KeptEncounterSummary, SearchMatch } from "@relationship-memory/shared";
+import type { ExtractionResult, ImageMimeType, KeptEncounterSummary, SearchMatch } from "@relationship-memory/shared";
 
 /** Demo person 1 — full extraction */
 export const DEMO_PERSON_FULL: ExtractionResult = {
@@ -62,6 +64,11 @@ const DEMO_EXTRACTIONS = [
 
 const DEFAULT_EXTRACTION: ExtractionResult = DEMO_PERSON_FULL;
 
+function demoIndexForImage(imageBase64: string): number {
+  const hash = createHash("sha256").update(imageBase64).digest();
+  return hash.readUInt32BE(0) % DEMO_EXTRACTIONS.length;
+}
+
 export class StubAIService implements AIService {
   private extractionIndex = 0;
 
@@ -70,11 +77,16 @@ export class StubAIService implements AIService {
     private matches: SearchMatch[] = [],
   ) {}
 
-  async extractEncounterFromImage(): Promise<ExtractionResult> {
+  async extractEncounterFromImage(input: {
+    eventName: string;
+    imageBase64: string;
+    mimeType: ImageMimeType;
+  }): Promise<ExtractionResult> {
     if (this.fixedExtraction) return this.fixedExtraction;
-    const idx = this.extractionIndex % DEMO_EXTRACTIONS.length;
+    const hashIdx = demoIndexForImage(input.imageBase64);
+    const cycleIdx = this.extractionIndex % DEMO_EXTRACTIONS.length;
     this.extractionIndex += 1;
-    return DEMO_EXTRACTIONS[idx]!;
+    return DEMO_EXTRACTIONS[hashIdx] ?? DEMO_EXTRACTIONS[cycleIdx]!;
   }
 
   async rankEncounters(input: {
@@ -101,6 +113,12 @@ export class StubAIService implements AIService {
 }
 
 let testStub: StubAIService | null = null;
+let stubInstance: StubAIService | null = null;
+
+export function getStubAIService(): StubAIService {
+  if (!stubInstance) stubInstance = new StubAIService();
+  return stubInstance;
+}
 
 export function setTestStubAIService(stub: StubAIService | null) {
   testStub = stub;

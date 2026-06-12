@@ -63,6 +63,7 @@ export function HomeScreen({ navigation }: { navigation: any }) {
   const resumeSession = async (session: PendingSession) => {
     setLoading(true);
     try {
+      setTriageQueue([]);
       const { queue } = await api.getSessionQueue(session.session_id);
       setSession(session.session_id, session.event_name);
       setTriageQueue(queue);
@@ -103,11 +104,11 @@ export function HomeScreen({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.container}>
-      <MonoPill>Onboarding brain for real-world events</MonoPill>
+      <MonoPill>Swipe through people you almost forgot</MonoPill>
 
-      <Text style={styles.title}>Relationship{"\n"}Memory</Text>
+      <Text style={styles.title}>Tinder for{"\n"}Old Friends</Text>
       <Text style={styles.sub}>
-        You met someone.{"\n"}You might never see them again.{"\n"}Unless you decide now.
+        You ran into someone from way back.{"\n"}One screenshot. One swipe.{"\n"}Keep the ones worth reconnecting with.
       </Text>
 
       <View style={styles.formula}>

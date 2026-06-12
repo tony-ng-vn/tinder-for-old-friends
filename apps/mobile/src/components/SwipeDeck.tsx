@@ -25,12 +25,11 @@ type Props = {
   onKeep: (
     encounter: Encounter,
     fields?: { context?: string; name?: string; number?: string; location?: string },
-  ) => void;
-  onForget: (encounter: Encounter) => void;
+  ) => void | Promise<void>;
+  onForget: (encounter: Encounter) => void | Promise<void>;
 };
 
 export function SwipeDeck({ queue, onKeep, onForget }: Props) {
-  const [index, setIndex] = useState(0);
   const [context, setContext] = useState("");
   const [showContext, setShowContext] = useState(false);
   const [pendingKeep, setPendingKeep] = useState<Encounter | null>(null);
@@ -40,8 +39,19 @@ export function SwipeDeck({ queue, onKeep, onForget }: Props) {
   const position = useRef(new Animated.ValueXY()).current;
   const currentRef = useRef<Encounter | undefined>(undefined);
 
-  const current = queue[index];
+  const current = queue[0];
   currentRef.current = current;
+
+  const resetPosition = () => {
+    position.setValue({ x: 0, y: 0 });
+  };
+
+  useEffect(() => {
+    resetPosition();
+    setContext("");
+    setShowContext(false);
+    setPendingKeep(null);
+  }, [current?.id]);
 
   useEffect(() => {
     if (pendingKeep) {
@@ -51,27 +61,14 @@ export function SwipeDeck({ queue, onKeep, onForget }: Props) {
     }
   }, [pendingKeep?.id]);
 
-  const resetPosition = () => {
-    position.setValue({ x: 0, y: 0 });
-  };
-
-  const advance = () => {
-    resetPosition();
-    setIndex((i) => i + 1);
-    setContext("");
-    setShowContext(false);
-    setPendingKeep(null);
-  };
-
-  const commitKeep = (ctx?: string) => {
+  const commitKeep = async (ctx?: string) => {
     if (!pendingKeep) return;
-    onKeep(pendingKeep, {
+    await onKeep(pendingKeep, {
       context: ctx,
       name: pendingKeep.is_draft ? draftName.trim() || undefined : undefined,
       number: pendingKeep.is_draft ? draftNumber.trim() || undefined : undefined,
       location: pendingKeep.is_draft ? draftLocation.trim() || undefined : undefined,
     });
-    advance();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
@@ -81,8 +78,7 @@ export function SwipeDeck({ queue, onKeep, onForget }: Props) {
       duration: 280,
       useNativeDriver: false,
     }).start(() => {
-      onForget(encounter);
-      advance();
+      void onForget(encounter);
     });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
@@ -122,12 +118,7 @@ export function SwipeDeck({ queue, onKeep, onForget }: Props) {
   ).current;
 
   if (!current && !showContext) {
-    return (
-      <View style={styles.empty}>
-        <Text style={styles.emptyPixel}>All caught up</Text>
-        <Text style={styles.emptyText}>The pond is still again.</Text>
-      </View>
-    );
+    return null;
   }
 
   const rotate = position.x.interpolate({
@@ -147,11 +138,11 @@ export function SwipeDeck({ queue, onKeep, onForget }: Props) {
     extrapolate: "clamp",
   });
 
-  const stackBehind = queue.slice(index + 1, index + 3);
+  const stackBehind = queue.slice(1, 3);
 
   return (
     <View style={styles.container}>
-      <MonoPill>{`${queue.length - index} to review`}</MonoPill>
+      <MonoPill>{`${queue.length} to review`}</MonoPill>
 
       <View style={styles.deck}>
         {stackBehind
@@ -171,7 +162,9 @@ export function SwipeDeck({ queue, onKeep, onForget }: Props) {
                 ]}
               >
                 {uri ? (
-                  <Image source={{ uri }} style={styles.photo} resizeMode="cover" />
+                  <View style={styles.photoContainer}>
+                    <Image source={{ uri }} style={styles.photo} resizeMode="contain" />
+                  </View>
                 ) : (
                   <View style={[styles.photo, styles.photoPlaceholder]} />
                 )}
@@ -196,11 +189,13 @@ export function SwipeDeck({ queue, onKeep, onForget }: Props) {
             accessibilityLabel={`Review ${current.name ?? "unknown person"}. Swipe right to keep, left to forget.`}
           >
             {encounterImageUri(current) ? (
-              <Image
-                source={{ uri: encounterImageUri(current)! }}
-                style={styles.photo}
-                resizeMode="cover"
-              />
+              <View style={styles.photoContainer}>
+                <Image
+                  source={{ uri: encounterImageUri(current)! }}
+                  style={styles.photo}
+                  resizeMode="contain"
+                />
+              </View>
             ) : (
               <View style={[styles.photo, styles.photoPlaceholder]}>
                 <Text style={styles.photoPlaceholderText}>No photo</Text>
@@ -310,6 +305,10 @@ const styles = StyleSheet.create({
   cardBehind: {
     position: "absolute",
     opacity: 0.7,
+  },
+  photoContainer: {
+    flex: 1,
+    backgroundColor: theme.panelBg,
   },
   photo: {
     width: "100%",

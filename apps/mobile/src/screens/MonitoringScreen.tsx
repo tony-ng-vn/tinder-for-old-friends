@@ -20,10 +20,27 @@ function formatRelative(iso: string): string {
   return `${hrs}h ago`;
 }
 
+function formatActivityLabel(item: {
+  name: string | null;
+  isDraft: boolean;
+  extractionSource?: "stub" | "cursor";
+}): string {
+  if (item.isDraft) {
+    return item.extractionSource === "stub"
+      ? "Demo draft · screenshot saved"
+      : "Draft · (add name) · screenshot saved";
+  }
+  if (item.extractionSource === "stub") {
+    return item.name ? `Demo: ${item.name}` : "Demo · screenshot saved";
+  }
+  return item.name ?? "Unknown";
+}
+
 export function MonitoringScreen({ navigation }: { navigation: any }) {
   const { sessionId, eventName, setTriageQueue, activityFeed, addActivity } = useSession();
   const [importing, setImporting] = useState(false);
   const [importCount, setImportCount] = useState(0);
+  const [demoMode, setDemoMode] = useState<boolean | null>(null);
 
   const importPhotos = async () => {
     if (!sessionId) return;
@@ -54,16 +71,18 @@ export function MonitoringScreen({ navigation }: { navigation: any }) {
                 ? "image/webp"
                 : "image/jpeg";
         try {
-          const { encounter } = await api.extract({
+          const { encounter, extraction_source } = await api.extract({
             session_id: sessionId,
             image_base64: asset.base64,
             mime_type: mime,
           });
+          setDemoMode(extraction_source === "stub");
           addActivity({
             id: encounter.id,
             name: encounter.name,
             isDraft: encounter.is_draft,
             at: new Date().toISOString(),
+            extractionSource: extraction_source,
           });
           success += 1;
         } catch (e) {
@@ -109,6 +128,12 @@ export function MonitoringScreen({ navigation }: { navigation: any }) {
           Screenshot LinkedIn profiles during the event, then import from Photos.
           Select multiple screenshots at once — each becomes someone on the pond.
         </Text>
+        {demoMode !== false && (
+          <Text style={styles.demoNote}>
+            Demo mode is on: names shown are sample placeholders, not read from your
+            screenshots. Enable real AI extraction to pull names from LinkedIn images.
+          </Text>
+        )}
         {importCount > 0 && (
           <Text style={styles.count}>{`${importCount} captured this session`}</Text>
         )}
@@ -127,11 +152,7 @@ export function MonitoringScreen({ navigation }: { navigation: any }) {
             {activityFeed.map((item) => (
               <View key={item.id} style={styles.feedRow}>
                 <Text style={styles.feedTime}>{formatRelative(item.at)}</Text>
-                <Text style={styles.feedBody}>
-                  {item.isDraft
-                    ? "Draft · (add name) · screenshot saved"
-                    : item.name ?? "Unknown"}
-                </Text>
+                <Text style={styles.feedBody}>{formatActivityLabel(item)}</Text>
               </View>
             ))}
           </GlassCard>
@@ -155,6 +176,13 @@ const styles = StyleSheet.create({
   container: { flexGrow: 1, padding: 24, gap: 16, paddingBottom: 40 },
   banner: { marginTop: 8 },
   hint: { color: theme.textMuted, lineHeight: 22, fontSize: 15 },
+  demoNote: {
+    color: theme.textMono,
+    fontFamily: theme.fonts.mono,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 12,
+  },
   count: {
     color: theme.textMono,
     fontFamily: theme.fonts.mono,

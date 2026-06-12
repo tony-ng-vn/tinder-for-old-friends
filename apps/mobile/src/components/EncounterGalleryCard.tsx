@@ -30,7 +30,9 @@ export function EncounterGalleryCard({ encounter, onPress, subtitle }: Props) {
   const content = (
     <View style={styles.card}>
       {uri ? (
-        <Image source={{ uri }} style={styles.image} resizeMode="cover" />
+        <View style={styles.imageContainer}>
+          <Image source={{ uri }} style={styles.image} resizeMode="contain" />
+        </View>
       ) : (
         <View style={[styles.image, styles.placeholder]}>
           <Text style={styles.placeholderText}>?</Text>
@@ -77,9 +79,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.glassBorder,
   },
-  image: {
+  imageContainer: {
     width: "100%",
     aspectRatio: 3 / 4,
+    backgroundColor: theme.panelBg,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
   },
   placeholder: {
     alignItems: "center",

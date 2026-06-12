@@ -1,8 +1,8 @@
-# Relationship Memory
+# Tinder for Old Friends
 
-**Remember the people you meet at events — before they fade.**
+**Reconnect with people you meet at events — before they fade.**
 
-You go to conferences, meetups, and demo days. You screenshot LinkedIn profiles and business cards. Then life moves on and you forget who they were. Relationship Memory helps you decide, in the moment, who is worth keeping.
+You go to conferences, meetups, and demo days. You screenshot LinkedIn profiles and business cards. Then life moves on and you forget who they were. Tinder for Old Friends helps you decide, in the moment, who is worth keeping.
 
 ---
 
@@ -19,6 +19,8 @@ This begins **monitoring** — you're actively collecting people you meet.
 During the event, screenshot LinkedIn profiles, business cards, or contact info on your phone like you normally would.
 
 When you're ready, tap **Import from Photos** and select **all your screenshots at once**. Each screenshot becomes one person on your "pond."
+
+The app reads names and details **from your screenshots** when real AI extraction is enabled. In demo mode (default for local setup), placeholder names are used instead — your photos are still saved.
 
 Wait until importing finishes before tapping **End monitoring**.
 
@@ -43,7 +45,7 @@ If you keep someone, you can optionally add context: what you talked about, thei
 
 ## The idea
 
-Most networking apps assume you'll follow up with everyone. Relationship Memory assumes the opposite: **you'll forget most people, and that's fine** — as long as you consciously choose who to remember.
+Most networking apps assume you'll follow up with everyone. Tinder for Old Friends assumes the opposite: **you'll forget most people, and that's fine** — as long as you consciously choose who to remember.
 
 Forgotten contacts are not searchable and not stored in your memory. Kept contacts stay with their screenshot, event name, and any context you added.
 
@@ -51,7 +53,7 @@ Forgotten contacts are not searchable and not stored in your memory. Kept contac
 
 ## Getting the app
 
-Relationship Memory runs as a mobile app (iOS/Android via Expo). You need the backend running on your machine or a deployed server — see [docs/DEVELOPER.md](docs/DEVELOPER.md) for setup.
+Tinder for Old Friends runs as a mobile app (iOS/Android via Expo). You need the backend running on your machine or a deployed server — see [docs/DEVELOPER.md](docs/DEVELOPER.md) for setup.
 
 ---
 

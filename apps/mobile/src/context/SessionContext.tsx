@@ -7,6 +7,7 @@ export type ActivityItem = {
   name: string | null;
   isDraft: boolean;
   at: string;
+  extractionSource?: "stub" | "cursor";
 };
 
 type SessionContextValue = {

@@ -6,6 +6,8 @@ import { InMemoryStore, useInMemoryStore } from "./store";
 import {
   endSession,
   extractCapture,
+  getSessionQueue,
+  listPendingSessions,
   searchEncounters,
   startSession,
   triageEncounter,
@@ -138,5 +140,44 @@ describe("relationship memory services", () => {
     assert.equal(updated.name, "Alex Rivera");
     assert.equal(updated.number, "555-0100");
     assert.equal(updated.location, "SF");
+  });
+
+  it("returns remaining queue after partial triage", async () => {
+    const session = await startSession("Partial Triage");
+    await extractCapture({
+      sessionId: session.id,
+      imageBase64: "fake-a",
+      mimeType: "image/png",
+    });
+    await extractCapture({
+      sessionId: session.id,
+      imageBase64: "fake-b",
+      mimeType: "image/png",
+    });
+    await extractCapture({
+      sessionId: session.id,
+      imageBase64: "fake-c",
+      mimeType: "image/png",
+    });
+
+    const { queue: initial } = await getSessionQueue(session.id);
+    assert.equal(initial.length, 3);
+
+    await triageEncounter(initial[0]!.id, "forget", {});
+
+    const { queue: remaining } = await getSessionQueue(session.id);
+    assert.equal(remaining.length, 2);
+    assert.deepEqual(
+      remaining.map((e) => e.id),
+      initial.slice(1).map((e) => e.id),
+    );
+
+    const { sessions } = await listPendingSessions();
+    const pending = sessions.find(
+      (entry): entry is NonNullable<(typeof sessions)[number]> =>
+        entry != null && entry.session_id === session.id,
+    );
+    assert.ok(pending);
+    assert.equal(pending.pending_count, 2);
   });
 });

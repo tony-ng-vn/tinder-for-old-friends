@@ -1,6 +1,6 @@
 import type { ExtractionResult, KeptEncounterSummary, TriageAction } from "@relationship-memory/shared";
 
-import { getAIService } from "./ai";
+import { getAIService, getExtractionSource } from "./ai";
 import { getActiveSession, insertCapture, insertEncounterFromExtraction } from "./db";
 import { mapEncounterWithCapture } from "./encounter-map";
 import { enrichEncounter, enrichEncounters } from "./encounter-enrich";
@@ -55,7 +55,12 @@ export async function extractCapture(input: {
       eventName: session.event_name,
       parsed,
     });
-    return { capture, encounter: enrichEncounter(mem, encounter), extraction: parsed };
+    return {
+      capture,
+      encounter: enrichEncounter(mem, encounter),
+      extraction: parsed,
+      extraction_source: getExtractionSource(),
+    };
   }
 
   const session = await getActiveSession(input.sessionId);
@@ -102,6 +107,7 @@ export async function extractCapture(input: {
     capture: { ...capture, public_url: publicUrl ?? null },
     encounter: { ...encounter, capture_url: publicUrl ?? null },
     extraction: parsed,
+    extraction_source: getExtractionSource(),
   };
 }
 

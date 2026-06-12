@@ -53,7 +53,10 @@ export const api = {
     image_base64: string;
     mime_type: "image/png" | "image/jpeg" | "image/gif" | "image/webp";
   }) =>
-    request<{ encounter: Encounter }>("/api/extract", {
+    request<{
+      encounter: Encounter;
+      extraction_source: "stub" | "cursor";
+    }>("/api/extract", {
       method: "POST",
       body: JSON.stringify(input),
     }),

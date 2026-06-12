@@ -13,8 +13,8 @@ const pressStart = Press_Start_2P({
 });
 
 export const metadata = {
-  title: "Relationship Memory",
-  description: "Personal relationship memory for event networking — capture, triage, recall.",
+  title: "Tinder for Old Friends",
+  description: "Reconnect with old friends at events — capture, swipe, keep the ones that matter.",
 };
 
 export default function RootLayout({

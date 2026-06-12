@@ -1,0 +1,50 @@
+{
+  "name": "relationship-memory",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "tsx --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "e2e": "bash scripts/e2e-core-loop.sh",
+    "supabase:check": "node scripts/check-supabase.mjs",
+    "mobile": "npm run start --workspace=@relationship-memory/mobile",
+    "mobile:tunnel": "npm run start:tunnel --workspace=@relationship-memory/mobile",
+    "mobile:ios": "npm run start:ios --workspace=@relationship-memory/mobile"
+  },
+  "dependencies": {
+    "@relationship-memory/shared": "file:./packages/shared",
+    "@supabase/supabase-js": "^2.49.1",
+    "next": "^15.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  },
+  "overrides": {
+    "metro": "0.81.5",
+    "metro-cache": "0.81.5",
+    "metro-config": "0.81.5",
+    "metro-core": "0.81.5",
+    "metro-transform-worker": "0.81.5",
+    "metro-resolver": "0.81.5",
+    "metro-runtime": "0.81.5",
+    "metro-source-map": "0.81.5",
+    "metro-file-map": "0.81.5",
+    "metro-babel-transformer": "0.81.5",
+    "metro-symbolicate": "0.81.5",
+    "@relationship-memory/mobile": {
+      "react-native": "0.76.9"
+    }
+  }
+}

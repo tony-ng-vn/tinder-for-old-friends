@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Relationship Memory",
+    "slug": "relationship-memory",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "relationship-memory",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.relationshipmemory.app"
+    },
+    "android": {
+      "package": "com.relationshipmemory.app"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ]
+  }
+}
